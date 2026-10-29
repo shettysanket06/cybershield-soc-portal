@@ -1,0 +1,1068 @@
+{% extends "base.html" %}
+
+{% block title %}Incidents | CyberShield{% endblock %}
+
+{% block content %}
+
+<!-- ====================================================== -->
+<!-- PAGE HEADER -->
+<!-- ====================================================== -->
+
+<div class="page-header">
+
+    <div>
+
+        <span class="eyebrow">
+            SOC / INCIDENT RESPONSE
+        </span>
+
+        <h1>Incident Management</h1>
+
+        <p>
+            Manage investigations, containment, remediation
+            and verification across the incident lifecycle.
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- ====================================================== -->
+<!-- INCIDENT SUMMARY -->
+<!-- ====================================================== -->
+
+<div class="stat-grid">
+
+    <div class="stat-card">
+
+        <span class="stat-label">
+            TOTAL INCIDENTS
+        </span>
+
+        <strong class="stat-value">
+            {{ incidents|length }}
+        </strong>
+
+        <span class="stat-meta">
+            Recorded security cases
+        </span>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <span class="stat-label">
+            INVESTIGATING
+        </span>
+
+        <strong class="stat-value">
+
+            {{ incidents
+                |selectattr("status", "equalto", "INVESTIGATING")
+                |list
+                |length
+            }}
+
+        </strong>
+
+        <span class="stat-meta">
+            Active analyst investigations
+        </span>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <span class="stat-label">
+            CONTAINED
+        </span>
+
+        <strong class="stat-value">
+
+            {{ incidents
+                |selectattr("status", "equalto", "CONTAINED")
+                |list
+                |length
+            }}
+
+        </strong>
+
+        <span class="stat-meta">
+            Threats under containment
+        </span>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <span class="stat-label">
+            CLOSED
+        </span>
+
+        <strong class="stat-value">
+
+            {{ incidents
+                |selectattr("status", "equalto", "CLOSED")
+                |list
+                |length
+            }}
+
+        </strong>
+
+        <span class="stat-meta">
+            Completed investigations
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- ====================================================== -->
+<!-- INCIDENT LIST -->
+<!-- ====================================================== -->
+
+<section class="panel">
+
+    <div class="panel-header">
+
+        <div>
+
+            <span class="eyebrow">
+                CASE MANAGEMENT
+            </span>
+
+            <h2>Security Incidents</h2>
+
+        </div>
+
+        <div class="panel-meta">
+            {{ incidents|length }} cases
+        </div>
+
+    </div>
+
+
+    {% if incidents %}
+
+    <div class="table-container">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+                    <th>Incident</th>
+                    <th>Severity</th>
+                    <th>Source</th>
+                    <th>Target</th>
+                    <th>Analyst</th>
+                    <th>Status</th>
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for incident in incidents %}
+
+                <tr>
+
+                    <td>
+                        <strong>
+                            #{{ incident.id }}
+                        </strong>
+                    </td>
+
+
+                    <td>
+
+                        <strong>
+                            {{ incident.title }}
+                        </strong>
+
+                        <span class="table-subtext">
+                            Alert #{{ incident.alert_id }}
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="severity {{ incident.severity|lower }}">
+                            {{ incident.severity }}
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <code>
+                            {{ incident.source_ip or "—" }}
+                        </code>
+
+                    </td>
+
+
+                    <td>
+
+                        <strong>
+                            {{ incident.target or "—" }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        {{ incident.assigned_username or "Unassigned" }}
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="status-badge {{ incident.status|lower }}">
+                            {{ incident.status }}
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <a
+                            href="{{ url_for(
+                                'investigation',
+                                incident_id=incident.id
+                            ) }}"
+                            class="btn btn-small btn-primary"
+                        >
+                            Investigate
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <div class="empty-icon">
+            ✓
+        </div>
+
+        <strong>
+            No incidents recorded
+        </strong>
+
+        <span>
+            Detected alerts can be converted into incidents
+            for investigation and response.
+        </span>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- RESPONSE WORKSPACE -->
+<!-- ====================================================== -->
+
+{% if incidents %}
+
+{% for incident in incidents %}
+
+<section class="panel incident-workspace">
+
+    <div class="panel-header">
+
+        <div>
+
+            <span class="eyebrow">
+                CASE #{{ incident.id }}
+            </span>
+
+            <h2>
+                {{ incident.title }}
+            </h2>
+
+        </div>
+
+
+        <div class="incident-header-right">
+
+            <span class="severity {{ incident.severity|lower }}">
+                {{ incident.severity }}
+            </span>
+
+            <span class="status-badge {{ incident.status|lower }}">
+                {{ incident.status }}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- LIFECYCLE -->
+    <!-- ================================================== -->
+
+    <div class="lifecycle">
+
+        <div class="lifecycle-step
+            {% if incident.status in [
+                'NEW',
+                'INVESTIGATING',
+                'CONTAINED',
+                'RESOLVED',
+                'CLOSED'
+            ] %}
+                active
+            {% endif %}
+        ">
+
+            <span>1</span>
+            <strong>New</strong>
+
+        </div>
+
+
+        <div class="lifecycle-line"></div>
+
+
+        <div class="lifecycle-step
+            {% if incident.status in [
+                'INVESTIGATING',
+                'CONTAINED',
+                'RESOLVED',
+                'CLOSED'
+            ] %}
+                active
+            {% endif %}
+        ">
+
+            <span>2</span>
+            <strong>Investigating</strong>
+
+        </div>
+
+
+        <div class="lifecycle-line"></div>
+
+
+        <div class="lifecycle-step
+            {% if incident.status in [
+                'CONTAINED',
+                'RESOLVED',
+                'CLOSED'
+            ] %}
+                active
+            {% endif %}
+        ">
+
+            <span>3</span>
+            <strong>Contained</strong>
+
+        </div>
+
+
+        <div class="lifecycle-line"></div>
+
+
+        <div class="lifecycle-step
+            {% if incident.status in [
+                'RESOLVED',
+                'CLOSED'
+            ] %}
+                active
+            {% endif %}
+        ">
+
+            <span>4</span>
+            <strong>Resolved</strong>
+
+        </div>
+
+
+        <div class="lifecycle-line"></div>
+
+
+        <div class="lifecycle-step
+            {% if incident.status == 'CLOSED' %}
+                active
+            {% endif %}
+        ">
+
+            <span>5</span>
+            <strong>Closed</strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- INCIDENT DETAILS -->
+    <!-- ================================================== -->
+
+    <div class="detail-grid">
+
+        <div class="detail-item">
+
+            <span>Source IP</span>
+
+            <code>
+                {{ incident.source_ip or "—" }}
+            </code>
+
+        </div>
+
+
+        <div class="detail-item">
+
+            <span>Target</span>
+
+            <strong>
+                {{ incident.target or "—" }}
+            </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+            <span>Alert Type</span>
+
+            <strong>
+                {{ incident.alert_type }}
+            </strong>
+
+        </div>
+
+
+        <div class="detail-item">
+
+            <span>Detection Rule</span>
+
+            <code>
+                {{ incident.rule }}
+            </code>
+
+        </div>
+
+
+        <div class="detail-item">
+
+            <span>Created</span>
+
+            <code>
+                {{ incident.created_at }}
+            </code>
+
+        </div>
+
+
+        <div class="detail-item">
+
+            <span>Assigned Analyst</span>
+
+            <strong>
+                {{ incident.assigned_username or "Unassigned" }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- STATUS TRANSITION -->
+    <!-- ================================================== -->
+
+    {% if incident.status != "CLOSED" %}
+
+    <div class="response-section">
+
+        <div class="section-title">
+
+            <span class="eyebrow">
+                INCIDENT LIFECYCLE
+            </span>
+
+            <h3>
+                Advance Case
+            </h3>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'incident_status',
+                incident_id=incident.id
+            ) }}"
+        >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="return_to" value="incidents">
+
+            {% if incident.status == "NEW" %}
+
+            <input
+                type="hidden"
+                name="status"
+                value="INVESTIGATING"
+            >
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Start Investigation
+            </button>
+
+            {% elif incident.status == "INVESTIGATING" %}
+
+            <input
+                type="hidden"
+                name="status"
+                value="CONTAINED"
+            >
+
+            <button
+                type="submit"
+                class="btn btn-warning"
+            >
+                Mark Contained
+            </button>
+
+            {% elif incident.status == "CONTAINED" %}
+
+            <input
+                type="hidden"
+                name="status"
+                value="RESOLVED"
+            >
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Mark Resolved
+            </button>
+
+            {% elif incident.status == "RESOLVED" %}
+
+            <input
+                type="hidden"
+                name="status"
+                value="CLOSED"
+            >
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Close Incident
+            </button>
+
+            {% endif %}
+
+        </form>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- FINDINGS -->
+    <!-- ================================================== -->
+
+    {% if incident.status in ["NEW", "INVESTIGATING"] %}
+    <div class="response-section">
+
+        <div class="section-title">
+
+            <span class="eyebrow">
+                ANALYSIS
+            </span>
+
+            <h3>
+                Investigation Findings
+            </h3>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'incident_findings',
+                incident_id=incident.id
+            ) }}"
+            class="stacked-form"
+        >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="return_to" value="incidents">
+
+            <div class="form-group">
+
+                <label for="findings-{{ incident.id }}">
+                    Findings
+                </label>
+
+                <textarea
+                    id="findings-{{ incident.id }}"
+                    name="findings"
+                    rows="4"
+                    placeholder="Document what was observed during the investigation..."
+                    required
+                >{{ incident.findings or "" }}</textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="root-cause-{{ incident.id }}">
+                    Root Cause
+                </label>
+
+                <textarea
+                    id="root-cause-{{ incident.id }}"
+                    name="root_cause"
+                    rows="3"
+                    placeholder="Identify the underlying cause of the incident..."
+                >{{ incident.root_cause or "" }}</textarea>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-secondary"
+            >
+                Save Findings
+            </button>
+
+        </form>
+
+    </div>
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- CONTAINMENT -->
+    <!-- ================================================== -->
+
+    {% if incident.status == "INVESTIGATING" or incident.response_action %}
+    <div class="response-section">
+
+        <div class="section-title">
+
+            <span class="eyebrow">
+                CONTAINMENT
+            </span>
+
+            <h3>
+                Response Actions
+            </h3>
+
+        </div>
+
+        {% if incident.status == "INVESTIGATING" %}
+        <div class="response-actions">
+
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'block_ip',
+                    incident_id=incident.id
+                ) }}"
+            >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="return_to" value="incidents">
+
+                <button
+                    type="submit"
+                    class="btn btn-danger"
+                    data-confirm="Apply simulated IP block to {{ incident.source_ip }}?"
+                >
+                    {% if blocked_ip_set and incident.source_ip in blocked_ip_set %}Confirm IP Block ({{ incident.source_ip }}){% else %}Block Source IP ({{ incident.source_ip }}){% endif %}
+                </button>
+
+            </form>
+
+
+            {% if incident.target and not incident.target.startswith('/') %}
+
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'lock_account',
+                    incident_id=incident.id
+                ) }}"
+            >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="return_to" value="incidents">
+
+                <button
+                    type="submit"
+                    class="btn btn-warning"
+                    data-confirm="Lock employee account '{{ incident.target }}'?"
+                >
+                    Lock Target Account ({{ incident.target }})
+                </button>
+
+            </form>
+
+            {% endif %}
+
+        </div>
+        {% endif %}
+
+
+        {% if incident.response_action %}
+
+        <div class="action-result">
+
+            <span class="eyebrow">
+                RECORDED CONTAINMENT ACTION
+            </span>
+
+            <p style="white-space: pre-line;">{{ incident.response_action }}</p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- REMEDIATION -->
+    <!-- ================================================== -->
+
+    {% if incident.status == "CONTAINED" %}
+    <div class="response-section">
+
+        <div class="section-title">
+
+            <span class="eyebrow">
+                REMEDIATION
+            </span>
+
+            <h3>
+                Corrective Action
+            </h3>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'remediation',
+                incident_id=incident.id
+            ) }}"
+            class="stacked-form"
+        >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="return_to" value="incidents">
+
+            <div class="form-group">
+
+                <label for="remediation-{{ incident.id }}">
+                    Remediation
+                </label>
+
+                <textarea
+                    id="remediation-{{ incident.id }}"
+                    name="remediation"
+                    rows="4"
+                    placeholder="Document the vulnerability fix or corrective action..."
+                    required
+                >{{ incident.remediation or "" }}</textarea>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-secondary"
+            >
+                Save Remediation
+            </button>
+
+        </form>
+
+    </div>
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- VERIFICATION -->
+    <!-- ================================================== -->
+
+    {% if incident.status == "RESOLVED" %}
+    <div class="response-section">
+
+        <div class="section-title">
+
+            <span class="eyebrow">
+                VERIFICATION
+            </span>
+
+            <h3>
+                Security Retest
+            </h3>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'verify_incident',
+                incident_id=incident.id
+            ) }}"
+            class="stacked-form"
+        >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="return_to" value="incidents">
+
+            <div class="form-group">
+
+                <label for="verification-{{ incident.id }}">
+                    Verification Result
+                </label>
+
+                <textarea
+                    id="verification-{{ incident.id }}"
+                    name="verification"
+                    rows="4"
+                    placeholder="Record the result of the security re-test..."
+                    required
+                >{{ incident.verification or "" }}</textarea>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-secondary"
+            >
+                Save Verification
+            </button>
+
+        </form>
+
+    </div>
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- STORED CASE DATA -->
+    <!-- ================================================== -->
+
+    {% if incident.findings or incident.root_cause or incident.remediation or incident.verification %}
+
+    <div class="case-summary">
+
+        <span class="eyebrow">
+            CASE RECORD
+        </span>
+
+        <h3>
+            Recorded Investigation Data
+        </h3>
+
+
+        {% if incident.findings %}
+
+        <div class="case-field">
+
+            <span>
+                Findings
+            </span>
+
+            <p>
+                {{ incident.findings }}
+            </p>
+
+        </div>
+
+        {% endif %}
+
+
+        {% if incident.root_cause %}
+
+        <div class="case-field">
+
+            <span>
+                Root Cause
+            </span>
+
+            <p>
+                {{ incident.root_cause }}
+            </p>
+
+        </div>
+
+        {% endif %}
+
+
+        {% if incident.remediation %}
+
+        <div class="case-field">
+
+            <span>
+                Remediation
+            </span>
+
+            <p>
+                {{ incident.remediation }}
+            </p>
+
+        </div>
+
+        {% endif %}
+
+
+        {% if incident.verification %}
+
+        <div class="case-field">
+
+            <span>
+                Verification
+            </span>
+
+            <p>
+                {{ incident.verification }}
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- INVESTIGATION LINK -->
+    <!-- ================================================== -->
+
+    <div class="workspace-footer" style="padding: 16px 20px; border-top: 1px solid var(--border-soft);">
+
+        <a
+            href="{{ url_for(
+                'investigation',
+                incident_id=incident.id
+            ) }}"
+            class="btn btn-primary"
+        >
+            Open Full Investigation →
+        </a>
+
+    </div>
+
+</section>
+
+{% endfor %}
+
+{% endif %}
+
+
+<!-- ====================================================== -->
+<!-- BLOCKED SOURCE IPS -->
+<!-- ====================================================== -->
+
+<section class="panel">
+
+    <div class="panel-header">
+        <div>
+            <span class="eyebrow">ACTIVE CONTAINMENT</span>
+            <h2>Blocked Source IPs</h2>
+        </div>
+        <div class="panel-meta">{{ blocked_ips|length if blocked_ips else 0 }} blocked</div>
+    </div>
+
+    {% if blocked_ips %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>IP Address</th>
+                    <th>Case</th>
+                    <th>Blocked By</th>
+                    <th>Reason</th>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in blocked_ips %}
+                <tr>
+                    <td><code>{{ item.ip_address }}</code></td>
+                    <td>
+                        {% if item.incident_id %}
+                            <a href="{{ url_for('investigation', incident_id=item.incident_id) }}" class="text-link">Case #{{ item.incident_id }}</a>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>{{ item.blocked_by_username or "SOC" }}</td>
+                    <td>{{ item.reason or "Simulated IP block" }}</td>
+                    <td><code>{{ item.created_at }}</code></td>
+                    <td>
+                        <form method="POST" action="{{ url_for('unblock_ip_route') }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="ip_address" value="{{ item.ip_address }}">
+                            <input type="hidden" name="return_to" value="incidents">
+                            <button type="submit" class="btn btn-small btn-secondary" data-confirm="Unblock {{ item.ip_address }}?">Unblock</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state compact">
+        <strong>No blocked IP addresses</strong>
+        <span>Source IPs blocked during incident containment will appear here.</span>
+    </div>
+    {% endif %}
+
+</section>
+
+{% endblock %}

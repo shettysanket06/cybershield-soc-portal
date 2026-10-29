@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Feedback | CyberShield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="portal-body">
+<header class="portal-header"><div class="portal-brand"><div class="portal-logo">CS</div><div><strong>CyberShield</strong><span>Employee Portal · Controlled Lab</span></div></div><div class="portal-user"><a href="{{ url_for('dashboard') }}" class="portal-nav-link">SOC Console →</a>{% if portal_username %}<span>Signed in as <strong>{{ portal_username }}</strong></span><form method="POST" action="{{ url_for('portal_logout') }}" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="portal-nav-link">Sign Out</button></form>{% else %}<a href="{{ url_for('portal_login') }}" class="portal-nav-link">Employee Login</a>{% endif %}</div></header>
+<nav class="portal-nav"><div class="portal-nav-inner"><a href="{{ url_for('portal_home') }}" class="portal-nav-item">Dashboard</a><a href="{{ url_for('portal_search') }}" class="portal-nav-item">Employee Directory</a><a href="{{ url_for('portal_feedback') }}" class="portal-nav-item active">Feedback</a></div></nav>
+<main class="portal-container">
+<section class="portal-page-heading"><span class="portal-kicker">EMPLOYEE SERVICES · CONTROLLED XSS LAB</span><h1>Employee Feedback</h1><p>Normal feedback is handled safely. XSS-like input is detected, logged and displayed as escaped text rather than executed.</p></section>
+<div class="portal-feedback-layout">
+<section class="portal-feedback-card"><div class="portal-search-header"><div class="portal-card-icon">MSG</div><div><h2>Submit Feedback</h2><p>Your feedback helps improve internal services.</p></div></div>
+{% if error %}<div class="portal-alert portal-alert-error"><strong>Submission Error</strong><span>{{ error }}</span></div>{% endif %}
+{% if submitted_feedback is not none %}<div class="portal-alert portal-alert-success"><strong>Feedback Submitted</strong><span>{% if detected %}XSS-like input was detected and recorded as a security event. The payload was rendered safely as text.{% else %}Your feedback has been received.{% endif %}</span></div><div class="portal-submitted-feedback"><span class="information-label">SUBMITTED FEEDBACK</span><div class="feedback-content">{{ submitted_feedback }}</div></div>{% endif %}
+<form method="POST" action="{{ url_for('portal_feedback') }}" class="portal-feedback-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="portal-form-group"><label for="name">Your Name</label><input type="text" id="name" name="name" value="{{ name or '' }}" required></div><div class="portal-form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" value="{{ email or '' }}" placeholder="employee@cybershield.local" required></div><div class="portal-form-group"><label for="feedback">Feedback</label><textarea id="feedback" name="feedback" rows="7" required>{{ feedback or '' }}</textarea></div><button type="submit" class="portal-login-button">SUBMIT FEEDBACK</button></form>
+</section>
+<aside class="portal-feedback-info"><div class="portal-information-card"><span class="information-label">DETECTION</span><h3>XSS Monitoring</h3><p>Suspicious markup and browser-event patterns are recorded as XSS telemetry.</p></div><div class="portal-information-card"><span class="information-label">SAFETY</span><h3>Safe Reflection</h3><p>Detected payloads are escaped before display so the lab demonstrates the event without creating an actual browser execution sink.</p></div><div class="portal-notice"><div class="portal-notice-icon">!</div><div><strong>Security Monitoring</strong><p>Submitted feedback is part of the controlled security-testing environment.</p></div></div></aside>
+</div>
+</main>
+<footer class="portal-footer"><div>CyberShield Technologies</div><div>Controlled Security Simulation</div></footer>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Error {{ status_code }} | CyberShield{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <span class="eyebrow">SYSTEM RESPONSE</span>
+        <h1>Error {{ status_code }}</h1>
+        <p>{{ message }}</p>
+    </div>
+    <div class="header-actions">
+        {% if current_username %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Return to Dashboard</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn-primary">SOC Login</a>
+            <a href="{{ url_for('portal_home') }}" class="btn btn-secondary">Employee Portal</a>
+        {% endif %}
+    </div>
+</div>
+<section class="panel empty-state">
+    <div class="empty-icon">!</div>
+    <strong>{{ message }}</strong>
+    <span>CyberShield handled the request and preserved application state.</span>
+</section>
+{% endblock %}

@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+
+{% block title %}Users{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-kicker">SYSTEM / IDENTITY MANAGEMENT</div>
+        <h1>Users</h1>
+        <p>Manage identities and access roles within the CyberShield environment.</p>
+    </div>
+
+    <div class="page-status">
+        <span class="status-dot"></span>
+        IDENTITY SERVICE ONLINE
+    </div>
+</div>
+
+
+<!-- User Statistics -->
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-label">TOTAL USERS</div>
+        <div class="stat-value">{{ users|length }}</div>
+        <div class="stat-meta">REGISTERED IDENTITIES</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">ADMINS</div>
+        <div class="stat-value">
+            {{ users|selectattr("role", "equalto", "ADMIN")|list|length }}
+        </div>
+        <div class="stat-meta">PRIVILEGED USERS</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">SOC ANALYSTS</div>
+        <div class="stat-value">
+            {{ users|selectattr("role", "equalto", "SOC_ANALYST")|list|length }}
+        </div>
+        <div class="stat-meta">SECURITY OPERATORS</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">LOCKED</div>
+        <div class="stat-value">
+            {{ users|selectattr("status", "equalto", "LOCKED")|list|length }}
+        </div>
+        <div class="stat-meta">RESTRICTED ACCOUNTS</div>
+    </div>
+
+</div>
+
+
+<!-- User Directory -->
+<section class="panel">
+
+    <div class="panel-header">
+
+        <div>
+            <h2>User Directory</h2>
+            <p>Authorized identities and their assigned CyberShield roles.</p>
+        </div>
+
+        <span class="panel-stat">
+            {{ users|length }} USERS
+        </span>
+
+    </div>
+
+
+    {% if users %}
+
+    <div class="table-container">
+
+        <table class="data-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>USERNAME</th>
+                    <th>EMAIL</th>
+                    <th>ROLE</th>
+                    <th>STATUS</th>
+                    <th>CREATED</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for user in users %}
+
+                <tr>
+
+                    <td class="mono">
+                        #{{ user.id }}
+                    </td>
+
+
+                    <td>
+
+                        <div class="user-name">
+
+                            <div class="user-avatar">
+                                {{ user.username[0]|upper }}
+                            </div>
+
+                            <div>
+                                <strong>{{ user.username }}</strong>
+
+                                {% if user.username == current_username %}
+                                    <span class="user-subtext">
+                                        CURRENT SESSION
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+                        <span class="mono">
+                            {{ user.email }}
+                        </span>
+                    </td>
+
+
+                    <td>
+
+                        {% if user.role == "ADMIN" %}
+
+                            <span class="role-badge role-admin">
+                                ADMIN
+                            </span>
+
+                        {% elif user.role == "SOC_ANALYST" %}
+
+                            <span class="role-badge role-analyst">
+                                SOC ANALYST
+                            </span>
+
+                        {% elif user.role == "EMPLOYEE" %}
+
+                            <span class="role-badge role-employee">
+                                EMPLOYEE
+                            </span>
+
+                        {% else %}
+
+                            <span class="role-badge">
+                                {{ user.role }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if user.status == "ACTIVE" %}
+
+                            <span class="badge badge-low">
+                                <span class="status-dot"></span>
+                                ACTIVE
+                            </span>
+
+                        {% elif user.status == "LOCKED" %}
+
+                            <span class="badge badge-critical">
+                                LOCKED
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-info">
+                                {{ user.status }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td class="mono">
+                        {{ user.created_at }}
+                    </td>
+
+                    <td>
+                        {% if user.username != current_username %}
+                            <form method="POST" action="{{ url_for('update_user_status_route', username=user.username) }}" class="inline-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                {% if user.status == "LOCKED" or user.status == "DISABLED" %}
+                                    <input type="hidden" name="status" value="ACTIVE">
+                                    <button type="submit" class="btn btn-small btn-primary">Unlock</button>
+                                {% else %}
+                                    <input type="hidden" name="status" value="LOCKED">
+                                    <button type="submit" class="btn btn-small btn-warning" data-confirm="Lock account '{{ user.username }}'?">Lock</button>
+                                {% endif %}
+                            </form>
+                        {% else %}
+                            <span class="text-muted">Active Admin</span>
+                        {% endif %}
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <div class="empty-icon">USR</div>
+
+        <h3>No Users Found</h3>
+
+        <p>
+            No identities are currently registered in the CyberShield
+            user directory.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+
+<!-- Role Architecture -->
+<section class="panel">
+
+    <div class="panel-header">
+
+        <div>
+            <h2>Access Roles</h2>
+            <p>Security responsibilities represented within the platform.</p>
+        </div>
+
+        <span class="panel-icon">RBAC</span>
+
+    </div>
+
+
+    <div class="role-grid">
+
+
+        <div class="role-card">
+
+            <div class="role-card-header">
+
+                <span class="role-icon admin-icon">ADM</span>
+
+                <div>
+                    <h3>Administrator</h3>
+                    <span>ADMIN</span>
+                </div>
+
+            </div>
+
+            <p>
+                Responsible for platform administration, identity
+                management and configuration of the CyberShield environment.
+            </p>
+
+            <div class="role-permissions">
+                <span>USER MANAGEMENT</span>
+                <span>SYSTEM ACCESS</span>
+                <span>PLATFORM CONTROL</span>
+            </div>
+
+        </div>
+
+
+        <div class="role-card">
+
+            <div class="role-card-header">
+
+                <span class="role-icon analyst-icon">SOC</span>
+
+                <div>
+                    <h3>SOC Analyst</h3>
+                    <span>SOC_ANALYST</span>
+                </div>
+
+            </div>
+
+            <p>
+                Investigates security alerts, analyzes logs, enriches
+                indicators and manages the incident-response lifecycle.
+            </p>
+
+            <div class="role-permissions">
+                <span>LOG ANALYSIS</span>
+                <span>ALERT INVESTIGATION</span>
+                <span>INCIDENT RESPONSE</span>
+            </div>
+
+        </div>
+
+
+        <div class="role-card">
+
+            <div class="role-card-header">
+
+                <span class="role-icon employee-icon">USR</span>
+
+                <div>
+                    <h3>Employee</h3>
+                    <span>EMPLOYEE</span>
+                </div>
+
+            </div>
+
+            <p>
+                Represents a normal organization user interacting with
+                the simulated employee web environment.
+            </p>
+
+            <div class="role-permissions">
+                <span>PORTAL ACCESS</span>
+                <span>ACCOUNT ACTIVITY</span>
+                <span>LIMITED ACCESS</span>
+            </div>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+<!-- Identity Security -->
+<section class="info-grid">
+
+    <div class="info-card">
+
+        <div class="info-card-icon">AUTH</div>
+
+        <div>
+            <h3>Authentication</h3>
+            <p>
+                User authentication events are recorded and can become
+                security telemetry for SOC investigation.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="info-card">
+
+        <div class="info-card-icon">LOCK</div>
+
+        <div>
+            <h3>Account Protection</h3>
+            <p>
+                Incident response can simulate account locking when
+                suspicious authentication activity is identified.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="info-card">
+
+        <div class="info-card-icon">AUDIT</div>
+
+        <div>
+            <h3>Security Audit Trail</h3>
+            <p>
+                Authentication and account-security events contribute
+                to the centralized CyberShield security log.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

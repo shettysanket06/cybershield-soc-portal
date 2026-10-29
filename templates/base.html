@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}CyberShield{% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet"
+    >
+</head>
+
+<body>
+
+<div class="app-shell {% if not current_username %}unauthenticated-shell{% endif %}">
+
+    {% if current_username %}
+    <!-- ================================================== -->
+    <!-- SIDEBAR -->
+    <!-- ================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-mark">
+                CS
+            </div>
+
+            <div class="brand-text">
+                <strong>CyberShield</strong>
+                <span>SECURITY OPERATIONS</span>
+            </div>
+        </div>
+
+
+        <div class="sidebar-section">
+
+            <div class="sidebar-label">
+                OVERVIEW
+            </div>
+
+            <a
+                href="{{ url_for('dashboard') }}"
+                class="nav-item {% if active_endpoint == 'dashboard' %}active{% endif %}"
+            >
+                <span class="nav-icon">⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+        </div>
+
+
+        <div class="sidebar-section">
+
+            <div class="sidebar-label">
+                MONITOR
+            </div>
+
+            <a
+                href="{{ url_for('logs') }}"
+                class="nav-item {% if active_endpoint == 'logs' %}active{% endif %}"
+            >
+                <span class="nav-icon">≡</span>
+                <span>Security Logs</span>
+            </a>
+
+            <a
+                href="{{ url_for('alerts') }}"
+                class="nav-item {% if active_endpoint == 'alerts' %}active{% endif %}"
+            >
+                <span class="nav-icon">!</span>
+                <span>Alerts</span>
+            </a>
+
+            <a
+                href="{{ url_for('incidents') }}"
+                class="nav-item {% if active_endpoint in ['incidents', 'investigation'] %}active{% endif %}"
+            >
+                <span class="nav-icon">◈</span>
+                <span>Incidents</span>
+            </a>
+
+        </div>
+
+
+        <div class="sidebar-section">
+
+            <div class="sidebar-label">
+                INTELLIGENCE
+            </div>
+
+            <a
+                href="{{ url_for('threat_intel') }}"
+                class="nav-item {% if active_endpoint == 'threat_intel' %}active{% endif %}"
+            >
+                <span class="nav-icon">◇</span>
+                <span>Threat Intelligence</span>
+            </a>
+
+        </div>
+
+
+        <div class="sidebar-section">
+
+            <div class="sidebar-label">
+                LAB
+            </div>
+
+            <a
+                href="{{ url_for('portal_home') }}"
+                class="nav-item nav-lab"
+            >
+                <span class="nav-icon">⌁</span>
+                <span>Vulnerable Web App</span>
+            </a>
+
+        </div>
+
+
+        <div class="sidebar-section">
+
+            <div class="sidebar-label">
+                SYSTEM
+            </div>
+
+            <a
+                href="{{ url_for('assets') }}"
+                class="nav-item {% if active_endpoint == 'assets' %}active{% endif %}"
+            >
+                <span class="nav-icon">▣</span>
+                <span>Assets</span>
+            </a>
+
+            {% if current_role == "ADMIN" %}
+            <a
+                href="{{ url_for('users') }}"
+                class="nav-item {% if active_endpoint == 'users' %}active{% endif %}"
+            >
+                <span class="nav-icon">◎</span>
+                <span>Users</span>
+            </a>
+            {% endif %}
+
+        </div>
+
+
+        <div class="sidebar-bottom">
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                <div>
+                    <strong>Detection Engine</strong>
+                    <small>Operational</small>
+                </div>
+
+            </div>
+
+            <form method="POST" action="{{ url_for('logout') }}" class="logout-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="logout-link">Sign out</button>
+            </form>
+
+        </div>
+
+    </aside>
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- MAIN APPLICATION -->
+    <!-- ================================================== -->
+
+    <main class="main-content">
+
+        {% if current_username %}
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <div class="breadcrumb">
+                    CYBERSHIELD
+                    <span>/</span>
+                    SOC CONSOLE
+                    {% if active_endpoint %}
+                        <span>/</span>
+                        {{ active_endpoint|replace('_', ' ')|upper }}
+                    {% endif %}
+                </div>
+
+            </div>
+
+
+            <div class="topbar-right">
+
+                <div class="connection-status">
+                    <span class="status-dot"></span>
+                    <span>SYSTEM ONLINE</span>
+                    <span>·</span>
+                    <span data-live-clock></span>
+                </div>
+
+
+                <div class="analyst-profile">
+
+                    <div class="profile-avatar">
+                        {{ current_username[0]|upper }}
+                    </div>
+
+                    <div class="profile-info">
+
+                        <strong>
+                            {{ current_username }}
+                        </strong>
+
+                        <small>
+                            {{ current_role }}
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+        {% endif %}
+
+
+        <section class="page-content">
+
+            {% with messages = get_flashed_messages(with_categories=True) %}
+
+                {% if messages %}
+
+                    <div class="flash-container">
+
+                        {% for category, message in messages %}
+
+                            <div class="flash-message {{ category }}">
+                                {{ message }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            {% block content %}
+            {% endblock %}
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script
+    src="{{ url_for('static', filename='script.js') }}"
+></script>
+
+{% block scripts %}
+{% endblock %}
+
+</body>
+
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Login | CyberShield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="portal-body portal-auth-body">
+<header class="portal-header">
+    <div class="portal-brand"><div class="portal-logo">CS</div><div><strong>CyberShield</strong><span>Employee Portal · Controlled Lab</span></div></div>
+    <a href="{{ url_for('portal_home') }}" class="portal-nav-link">← Back to Portal</a>
+</header>
+<main class="portal-auth-container">
+    <section class="portal-login-card">
+        <div class="portal-login-header"><div class="portal-login-icon">LOCK</div><span class="portal-kicker">EMPLOYEE SERVICES</span><h1>Employee Login</h1><p>Authenticate as a simulated employee and generate SOC telemetry.</p></div>
+        {% if error %}<div class="portal-alert portal-alert-error"><strong>Authentication Failed</strong><span>{{ error }}</span></div>{% endif %}
+        <form method="POST" action="{{ url_for('portal_login') }}" class="portal-login-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="portal-form-group"><label for="username">Username</label><input type="text" id="username" name="username" value="{{ username or '' }}" placeholder="e.g. john" autocomplete="username" required></div>
+            <div class="portal-form-group"><label for="password">Password</label><input type="password" id="password" name="password" placeholder="Enter password" autocomplete="current-password" required></div>
+            <button type="submit" class="portal-login-button">SIGN IN</button>
+        </form>
+        <div class="demo-credentials"><div class="demo-title">DEMONSTRATION EMPLOYEE</div><div class="credential-row"><span>Employee</span><code>john / john123</code></div></div>
+    </section>
+    <aside class="portal-security-card"><div class="portal-security-header"><span class="security-icon">LAB</span><div><strong>Controlled Authentication</strong><small>Attack telemetry enabled</small></div></div><div class="portal-security-items"><div class="portal-security-item"><span class="security-item-number">01</span><div><strong>Brute-force simulation</strong><p>Repeated failures are recorded and correlated by the detection engine.</p></div></div><div class="portal-security-item"><span class="security-item-number">02</span><div><strong>Account containment</strong><p>SOC analysts can simulate locking the target account during response.</p></div></div><div class="portal-security-item"><span class="security-item-number">03</span><div><strong>Audit telemetry</strong><p>Authentication activity becomes part of the centralized security log.</p></div></div></div><div class="portal-security-status"><span class="status-dot"></span><span>Telemetry Operational</span></div></aside>
+</main>
+<footer class="portal-footer"><div>CyberShield Technologies</div><div>Controlled Security Simulation</div></footer>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

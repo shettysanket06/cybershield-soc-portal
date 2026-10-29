@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Directory | CyberShield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="portal-body">
+<header class="portal-header"><div class="portal-brand"><div class="portal-logo">CS</div><div><strong>CyberShield</strong><span>Employee Portal · Controlled Lab</span></div></div><div class="portal-user"><a href="{{ url_for('dashboard') }}" class="portal-nav-link">SOC Console →</a>{% if portal_username %}<span>Signed in as <strong>{{ portal_username }}</strong></span><form method="POST" action="{{ url_for('portal_logout') }}" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="portal-nav-link">Sign Out</button></form>{% else %}<a href="{{ url_for('portal_login') }}" class="portal-nav-link">Employee Login</a>{% endif %}</div></header>
+<nav class="portal-nav"><div class="portal-nav-inner"><a href="{{ url_for('portal_home') }}" class="portal-nav-item">Dashboard</a><a href="{{ url_for('portal_search') }}" class="portal-nav-item active">Employee Directory</a><a href="{{ url_for('portal_feedback') }}" class="portal-nav-item">Feedback</a></div></nav>
+<main class="portal-container">
+<section class="portal-page-heading"><span class="portal-kicker">INTERNAL DIRECTORY · CONTROLLED SQLi LAB</span><h1>Employee Directory</h1><p>Normal searches are handled safely. SQL-injection-like input is intercepted by the simulation and converted into SOC telemetry without querying raw SQL.</p></section>
+<section class="portal-search-card"><div class="portal-search-header"><div class="portal-card-icon">DIR</div><div><h2>Search Employees</h2><p>Enter a name, username or department.</p></div></div><form method="GET" action="{{ url_for('portal_search') }}" class="portal-search-form"><div class="portal-form-group"><label for="q">Search Query</label><input type="text" id="q" name="q" value="{{ query or '' }}" placeholder="e.g. john" autocomplete="off"></div><button type="submit" class="portal-search-button">SEARCH DIRECTORY</button></form>{% if blocked_error %}<div class="portal-alert portal-alert-error" style="margin-top: 14px;"><strong>SOC Containment Active</strong><span>{{ blocked_error }}</span></div>{% endif %}{% if injection_detected %}<div class="portal-alert portal-alert-error" style="margin-top: 14px;"><strong>SQL Injection Pattern Detected</strong><span>The lab recorded the request as SQL_INJECTION_ATTEMPT and exposed simulated directory records for demonstration.</span></div>{% endif %}</section>
+{% if results %}
+<section class="portal-results-section"><div class="portal-section-header"><div><h2>Search Results</h2><p>{{ results|length }} matching employee record(s)</p></div></div><div class="portal-results-grid">{% for employee in results %}<div class="employee-result-card"><div class="employee-avatar">{{ employee.username[0]|upper }}</div><div class="employee-result-content"><h3>{{ employee.username }}</h3><span class="employee-role">{{ employee.role }}</span><div class="employee-details"><div><span>EMAIL</span><strong>{{ employee.email }}</strong></div><div><span>STATUS</span><strong>{{ employee.status }}</strong></div></div></div></div>{% endfor %}</div></section>
+{% elif query and not blocked_error %}
+<section class="portal-empty-results"><div class="portal-empty-icon">?</div><h2>No Employees Found</h2><p>No employee records matched <strong>"{{ query }}"</strong>.</p></section>
+{% endif %}
+<section class="portal-information-grid"><div class="portal-information-card"><span class="information-label">DIRECTORY</span><strong>Controlled Search Surface</strong><p>Normal directory functionality remains safe while suspicious input becomes SOC telemetry.</p></div><div class="portal-information-card"><span class="information-label">DETECTION</span><strong>SQL Injection Rule</strong><p>Configured patterns are normalized and correlated by the detection engine.</p></div><div class="portal-information-card"><span class="information-label">SECURITY</span><strong>No Raw SQL Sink</strong><p>The simulation does not execute user-supplied SQL against the CyberShield database.</p></div></section>
+</main>
+<footer class="portal-footer"><div>CyberShield Technologies</div><div>Controlled Security Simulation</div></footer>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Threat Intelligence{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-kicker">INTELLIGENCE / IOC DATABASE</div>
+        <h1>Threat Intelligence</h1>
+        <p>Investigate indicators of compromise and enrich security events.</p>
+    </div>
+
+    <div class="page-status">
+        <span class="status-dot"></span>
+        INTELLIGENCE ENGINE ONLINE
+    </div>
+</div>
+
+<!-- IOC Lookup -->
+<section class="panel intel-search-panel">
+    <div class="panel-header">
+        <div>
+            <h2>Indicator Lookup</h2>
+            <p>Search the CyberShield IOC database for known indicators.</p>
+        </div>
+        <span class="panel-icon">IOC</span>
+    </div>
+
+    <form method="POST" class="intel-search-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group intel-input-group">
+            <label for="indicator">IP Address / Domain / Hash</label>
+
+            <input
+                type="text"
+                id="indicator"
+                name="indicator"
+                value="{{ search_value or '' }}"
+                placeholder="e.g. 203.0.113.45"
+                autocomplete="off"
+                required
+            >
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            LOOK UP INDICATOR
+        </button>
+    </form>
+</section>
+
+
+<!-- Lookup Result -->
+{% if lookup_result %}
+<section class="panel intel-result-panel">
+
+    <div class="panel-header">
+        <div>
+            <h2>Lookup Result</h2>
+            <p>Threat intelligence information associated with the requested indicator.</p>
+        </div>
+
+        {% if lookup_result.found %}
+            <span class="badge badge-high">MATCH FOUND</span>
+        {% else %}
+            <span class="badge badge-info">NO MATCH</span>
+        {% endif %}
+    </div>
+
+    {% if lookup_result.found %}
+
+    <div class="intel-result-grid">
+
+        <div class="intel-field">
+            <span class="field-label">Indicator Type</span>
+            <strong>{{ lookup_result.type }}</strong>
+        </div>
+
+        <div class="intel-field">
+            <span class="field-label">Indicator</span>
+            <strong class="mono">{{ lookup_result.value }}</strong>
+        </div>
+
+        <div class="intel-field">
+            <span class="field-label">Reputation</span>
+
+            {% if lookup_result.reputation == "MALICIOUS" %}
+                <span class="badge badge-critical">
+                    {{ lookup_result.reputation }}
+                </span>
+            {% elif lookup_result.reputation == "SUSPICIOUS" %}
+                <span class="badge badge-high">
+                    {{ lookup_result.reputation }}
+                </span>
+            {% else %}
+                <span class="badge badge-info">
+                    {{ lookup_result.reputation }}
+                </span>
+            {% endif %}
+        </div>
+
+        <div class="intel-field">
+            <span class="field-label">Confidence</span>
+            <strong>{{ lookup_result.confidence }}%</strong>
+        </div>
+
+        <div class="intel-field intel-field-wide">
+            <span class="field-label">Description</span>
+            <p>{{ lookup_result.description }}</p>
+        </div>
+
+        <div class="intel-field intel-field-wide">
+            <span class="field-label">Source</span>
+            <strong>{{ lookup_result.source }}</strong>
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state compact">
+        <div class="empty-icon">?</div>
+        <h3>No Intelligence Record Found</h3>
+        <p>
+            The requested indicator does not currently exist in the
+            CyberShield intelligence database.
+        </p>
+    </div>
+
+    {% endif %}
+
+</section>
+{% endif %}
+
+
+<!-- IOC Database -->
+<section class="panel">
+
+    <div class="panel-header">
+        <div>
+            <h2>IOC Database</h2>
+            <p>Known indicators available for investigation and enrichment.</p>
+        </div>
+
+        <div class="panel-stat">
+            {{ iocs|length }} INDICATORS
+        </div>
+    </div>
+
+    {% if iocs %}
+
+    <div class="table-container">
+        <table class="data-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>TYPE</th>
+                    <th>INDICATOR</th>
+                    <th>REPUTATION</th>
+                    <th>CONFIDENCE</th>
+                    <th>SOURCE</th>
+                    <th>DESCRIPTION</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for ioc in iocs %}
+
+                <tr>
+
+                    <td class="mono">
+                        #{{ ioc.id }}
+                    </td>
+
+                    <td>
+                        <span class="ioc-type">
+                            {{ ioc.type }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="mono ioc-value">
+                            {{ ioc.value }}
+                        </span>
+                    </td>
+
+                    <td>
+
+                        {% if ioc.reputation == "MALICIOUS" %}
+
+                            <span class="badge badge-critical">
+                                MALICIOUS
+                            </span>
+
+                        {% elif ioc.reputation == "SUSPICIOUS" %}
+
+                            <span class="badge badge-high">
+                                SUSPICIOUS
+                            </span>
+
+                        {% elif ioc.reputation == "INTERNAL" %}
+
+                            <span class="badge badge-info">
+                                INTERNAL
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-low">
+                                {{ ioc.reputation }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+                        <div class="confidence">
+                            <span class="confidence-value">{{ ioc.confidence }}%</span>
+                        </div>
+                    </td>
+
+                    <td>
+                        {{ ioc.source }}
+                    </td>
+
+                    <td class="description-cell">
+                        {{ ioc.description }}
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <div class="empty-icon">IOC</div>
+
+        <h3>No Indicators Available</h3>
+
+        <p>
+            The CyberShield intelligence database currently contains
+            no indicators.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+
+<!-- Add Indicator -->
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Register Threat Indicator</h2>
+            <p>Add or update an indicator of compromise in the local CyberShield intelligence database.</p>
+        </div>
+        <span class="panel-icon">ADD</span>
+    </div>
+    <form method="POST" action="{{ url_for('add_threat_intel') }}" style="padding: 20px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="ioc-type">Indicator Type</label>
+                <select id="ioc-type" name="type">
+                    <option value="IP">IP</option>
+                    <option value="DOMAIN">DOMAIN</option>
+                    <option value="HASH">HASH</option>
+                    <option value="URL">URL</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ioc-value">Indicator Value</label>
+                <input type="text" id="ioc-value" name="value" placeholder="e.g. 198.51.100.99" required>
+            </div>
+            <div class="form-group">
+                <label for="ioc-reputation">Reputation</label>
+                <select id="ioc-reputation" name="reputation">
+                    <option value="MALICIOUS">MALICIOUS</option>
+                    <option value="SUSPICIOUS">SUSPICIOUS</option>
+                    <option value="INTERNAL">INTERNAL</option>
+                    <option value="BENIGN">BENIGN</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ioc-confidence">Confidence (%)</label>
+                <input type="number" id="ioc-confidence" name="confidence" value="85" min="0" max="100" required>
+            </div>
+            <div class="form-group">
+                <label for="ioc-description">Description</label>
+                <input type="text" id="ioc-description" name="description" placeholder="Context or observed threat behavior..." required>
+            </div>
+            <div class="form-group">
+                <label for="ioc-source">Intelligence Source</label>
+                <input type="text" id="ioc-source" name="source" value="CyberShield SOC Analyst" required>
+            </div>
+        </div>
+        <div style="margin-top: 14px;">
+            <button type="submit" class="btn btn-primary">Save Indicator</button>
+        </div>
+    </form>
+</section>
+
+
+<!-- Intelligence Workflow -->
+<section class="intel-workflow">
+
+    <div class="workflow-title">
+        <span class="page-kicker">ANALYST WORKFLOW</span>
+        <h2>Threat Intelligence Pipeline</h2>
+    </div>
+
+    <div class="workflow-grid">
+
+        <div class="workflow-step">
+            <span class="workflow-number">01</span>
+            <div>
+                <strong>Identify</strong>
+                <p>Extract an IOC from a security alert or investigation.</p>
+            </div>
+        </div>
+
+        <div class="workflow-arrow">→</div>
+
+        <div class="workflow-step">
+            <span class="workflow-number">02</span>
+            <div>
+                <strong>Enrich</strong>
+                <p>Compare the indicator against available intelligence.</p>
+            </div>
+        </div>
+
+        <div class="workflow-arrow">→</div>
+
+        <div class="workflow-step">
+            <span class="workflow-number">03</span>
+            <div>
+                <strong>Assess</strong>
+                <p>Review reputation, confidence and contextual information.</p>
+            </div>
+        </div>
+
+        <div class="workflow-arrow">→</div>
+
+        <div class="workflow-step">
+            <span class="workflow-number">04</span>
+            <div>
+                <strong>Respond</strong>
+                <p>Use the intelligence to support incident-response decisions.</p>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

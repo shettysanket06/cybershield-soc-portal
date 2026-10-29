@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Security Logs | CyberShield{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <span class="eyebrow">MONITOR / LOGS</span>
+
+        <h1>Security Logs</h1>
+
+        <p>
+            Centralized security events collected from the
+            simulated CyberShield environment.
+        </p>
+    </div>
+
+</div>
+
+
+<div class="panel intel-search-panel">
+    <div class="panel-header">
+        <div>
+            <span class="eyebrow">FILTER TELEMETRY</span>
+            <h2>Search Security Logs</h2>
+        </div>
+        {% if selected_event_type or selected_source_ip or search_query %}
+            <a href="{{ url_for('logs') }}" class="btn btn-small btn-secondary">Clear Filters</a>
+        {% endif %}
+    </div>
+    <form method="GET" action="{{ url_for('logs') }}" class="intel-search-form" style="flex-wrap: wrap;">
+        <div class="form-group intel-input-group">
+            <label for="q">Search Keyword / Payload / User</label>
+            <input type="text" id="q" name="q" value="{{ search_query or '' }}" placeholder="e.g. john, OR 1=1, /portal/search">
+        </div>
+        <div class="form-group" style="min-width: 190px;">
+            <label for="event_type">Event Type</label>
+            <select id="event_type" name="event_type">
+                <option value="">All Events</option>
+                {% for ev in ['LOGIN_FAILURE', 'LOGIN_SUCCESS', 'SQL_INJECTION_ATTEMPT', 'XSS_ATTEMPT', 'WEB_REQUEST', 'IP_BLOCKED', 'ACCOUNT_LOCKED', 'SYSTEM'] %}
+                <option value="{{ ev }}" {% if selected_event_type == ev %}selected{% endif %}>{{ ev }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group" style="min-width: 170px;">
+            <label for="source_ip">Source IP</label>
+            <input type="text" id="source_ip" name="source_ip" value="{{ selected_source_ip or '' }}" placeholder="e.g. 203.0.113.45">
+        </div>
+        <button type="submit" class="btn btn-primary">Filter Logs</button>
+    </form>
+</div>
+
+
+<div class="panel">
+
+    <div class="panel-header">
+
+        <div>
+            <span class="eyebrow">EVENT STREAM</span>
+            <h2>Collected Events</h2>
+        </div>
+
+        <div class="panel-meta">
+            {{ logs|length }} events
+        </div>
+
+    </div>
+
+
+    <div class="table-container">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+                    <th>ID</th>
+                    <th>Timestamp</th>
+                    <th>Event</th>
+                    <th>Source IP</th>
+                    <th>User</th>
+                    <th>Endpoint</th>
+                    <th>Status</th>
+                    <th>Message &amp; Payload</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% if logs %}
+
+                    {% for log in logs %}
+
+                    <tr>
+
+                        <td>
+                            <span class="table-id">
+                                #{{ log.id }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <code>
+                                {{ log.timestamp }}
+                            </code>
+                        </td>
+
+                        <td>
+
+                            <span class="event-badge
+                                {% if 'FAILURE' in log.event_type or 'ATTEMPT' in log.event_type or 'BLOCKED' in log.event_type or 'LOCKED' in log.event_type %}
+                                    danger
+                                {% elif 'SUCCESS' in log.event_type %}
+                                    success
+                                {% else %}
+                                    info
+                                {% endif %}
+                            ">
+                                {{ log.event_type }}
+                            </span>
+
+                        </td>
+
+                        <td>
+                            <code>
+                                {{ log.source_ip or "—" }}
+                            </code>
+                        </td>
+
+                        <td>
+                            {{ log.username or "—" }}
+                        </td>
+
+                        <td>
+                            <code>
+                                {{ (log.method ~ ' ') if log.method else '' }}{{ log.endpoint or "—" }}
+                            </code>
+                            {% if log.asset_name %}
+                            <span class="table-subtext">{{ log.asset_name }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+
+                            {% if log.status_code and log.status_code >= 400 %}
+
+                                <span class="status-code danger">
+                                    {{ log.status_code }}
+                                </span>
+
+                            {% elif log.status_code %}
+
+                                <span class="status-code success">
+                                    {{ log.status_code }}
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-code">
+                                    —
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="description-cell">
+                            <div>{{ log.message or "—" }}</div>
+                            {% if log.request_data %}
+                            <div style="margin-top: 4px;">
+                                <code style="font-size: 10px; color: #ffb5bc;">Payload: {{ log.request_data }}</code>
+                            </div>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            class="table-empty"
+                        >
+                            No security logs matched the current criteria.
+                        </td>
+
+                    </tr>
+
+                {% endif %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

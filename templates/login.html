@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Login | CyberShield{% endblock %}
+
+{% block content %}
+
+<div class="login-page">
+
+    <div class="login-card">
+
+        <div class="login-brand">
+
+            <div class="brand-mark large">
+                CS
+            </div>
+
+            <div>
+                <h1>CyberShield</h1>
+                <p>Security Operations Console</p>
+            </div>
+
+        </div>
+
+        <div class="login-header">
+
+            <span class="eyebrow">
+                AUTHENTICATED ACCESS
+            </span>
+
+            <h2>Analyst Login</h2>
+
+            <p>
+                Sign in to access the CyberShield SOC environment.
+            </p>
+
+        </div>
+
+        {% if error %}
+
+        <div class="alert-box danger">
+
+            <strong>Authentication failed</strong>
+
+            <span>
+                {{ error }}
+            </span>
+
+        </div>
+
+        {% endif %}
+
+        <form
+            method="POST"
+            action="{{ url_for('login') }}"
+            class="login-form"
+        >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+
+                <label for="username">
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Enter username"
+                    autocomplete="username"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter password"
+                    autocomplete="current-password"
+                    required
+                >
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary btn-full"
+            >
+                Sign In
+            </button>
+
+        </form>
+
+        <div class="demo-credentials">
+
+            <div class="demo-title">
+                DEMONSTRATION ACCESS
+            </div>
+
+            <div class="credential-row">
+
+                <span>
+                    Administrator
+                </span>
+
+                <code>
+                    admin / admin123
+                </code>
+
+            </div>
+
+            <div class="credential-row">
+
+                <span>
+                    SOC Analyst
+                </span>
+
+                <code>
+                    analyst / analyst123
+                </code>
+
+            </div>
+
+        </div>
+
+        <div class="login-footer">
+
+            <span class="status-dot"></span>
+
+            Controlled Cybersecurity Simulation Environment · CSRF protected
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

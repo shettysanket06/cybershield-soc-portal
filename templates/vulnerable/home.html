@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberShield Employee Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="portal-body">
+<header class="portal-header">
+    <div class="portal-brand">
+        <div class="portal-logo">CS</div>
+        <div><strong>CyberShield</strong><span>Employee Portal · Controlled Lab</span></div>
+    </div>
+    <div class="portal-user">
+        <a href="{{ url_for('dashboard') }}" class="portal-nav-link">SOC Console →</a>
+        {% if portal_username %}
+            <span>Signed in as <strong>{{ portal_username }}</strong></span>
+            <form method="POST" action="{{ url_for('portal_logout') }}" class="inline-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="portal-nav-link">Sign Out</button>
+            </form>
+        {% else %}
+            <a href="{{ url_for('portal_login') }}" class="portal-nav-link">Employee Login</a>
+        {% endif %}
+    </div>
+</header>
+
+<nav class="portal-nav">
+    <div class="portal-nav-inner">
+        <a href="{{ url_for('portal_home') }}" class="portal-nav-item active">Dashboard</a>
+        <a href="{{ url_for('portal_search') }}" class="portal-nav-item">Employee Directory</a>
+        <a href="{{ url_for('portal_feedback') }}" class="portal-nav-item">Feedback</a>
+    </div>
+</nav>
+
+<main class="portal-container">
+    <section class="portal-welcome">
+        <div>
+            <span class="portal-kicker">CYBERSHIELD TECHNOLOGIES · CONTROLLED LAB</span>
+            <h1>Employee Services Portal</h1>
+            <p>Simulated employee services used to generate defensive SOC telemetry and demonstrate controlled attack scenarios.</p>
+        </div>
+        <div class="portal-system-status">
+            <span class="status-dot" {% if is_source_blocked %}style="background:#d9434f;"{% endif %}></span>
+            <div>
+                <strong>{% if is_source_blocked %}Source IP Blocked{% else %}Lab Operational{% endif %}</strong>
+                <small>{{ source_ip }} · {% if is_source_blocked %}Contained by SOC{% else %}Telemetry enabled{% endif %}</small>
+            </div>
+        </div>
+    </section>
+
+    {% if is_source_blocked %}
+    <div class="portal-alert portal-alert-error">
+        <strong>SOC Containment Policy Active</strong>
+        <span>The currently selected simulation source ({{ source_ip }}) has been blocked by CyberShield SOC incident response. Requests from this source will be rejected with HTTP 403.</span>
+    </div>
+    {% endif %}
+
+    <section class="portal-section">
+        <div class="portal-section-header">
+            <div><h2>Simulation Source</h2><p>Select the controlled source identity used for generated security events.</p></div>
+        </div>
+        <form method="POST" action="{{ url_for('select_simulated_source') }}" class="portal-search-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="portal-form-group">
+                <label for="simulated_host">Attack Source</label>
+                <select id="simulated_host" name="simulated_host">
+                    {% for key, host in simulated_hosts.items() %}
+                    <option value="{{ key }}" {% if key == selected_host %}selected{% endif %}>
+                        {{ host.hostname }} · {{ host.ip }} · {{ host.type }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="portal-search-button">APPLY SOURCE</button>
+        </form>
+    </section>
+
+    <section class="portal-section">
+        <div class="portal-section-header"><div><h2>Quick Access</h2><p>Controlled application surfaces</p></div></div>
+        <div class="portal-card-grid">
+            <a href="{{ url_for('portal_login') }}" class="portal-card"><div class="portal-card-icon">ID</div><div><h3>Employee Login</h3><p>Generate authentication events and controlled brute-force telemetry.</p><span class="portal-card-action">OPEN LOGIN →</span></div></a>
+            <a href="{{ url_for('portal_search') }}" class="portal-card"><div class="portal-card-icon">DIR</div><div><h3>Employee Directory</h3><p>Normal searches and controlled SQL-injection simulations.</p><span class="portal-card-action">OPEN DIRECTORY →</span></div></a>
+            <a href="{{ url_for('portal_feedback') }}" class="portal-card"><div class="portal-card-icon">MSG</div><div><h3>Employee Feedback</h3><p>Normal feedback and controlled XSS detection simulations.</p><span class="portal-card-action">OPEN FEEDBACK →</span></div></a>
+        </div>
+    </section>
+
+    <section class="portal-notice">
+        <div class="portal-notice-icon">!</div>
+        <div><strong>Controlled Lab Notice</strong><p>This portal intentionally simulates attack conditions for CyberShield detection and incident-response demonstrations. It is not a production employee application.</p></div>
+    </section>
+</main>
+
+<footer class="portal-footer"><div>CyberShield Technologies</div><div>Controlled Security Simulation</div></footer>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

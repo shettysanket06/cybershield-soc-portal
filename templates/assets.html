@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Assets{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-kicker">SYSTEM / ASSET INVENTORY</div>
+        <h1>Assets</h1>
+        <p>Monitor systems and applications within the CyberShield environment.</p>
+    </div>
+
+    <div class="page-status">
+        <span class="status-dot"></span>
+        ASSET MONITORING ACTIVE
+    </div>
+</div>
+
+
+<!-- Asset Overview -->
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-label">TOTAL ASSETS</div>
+        <div class="stat-value">{{ assets|length }}</div>
+        <div class="stat-meta">REGISTERED SYSTEMS</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">ONLINE</div>
+        <div class="stat-value">
+            {{ assets|selectattr("status", "equalto", "ONLINE")|list|length }}
+        </div>
+        <div class="stat-meta">ACTIVE ASSETS</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">OFFLINE</div>
+        <div class="stat-value">
+            {{ assets|selectattr("status", "equalto", "OFFLINE")|list|length }}
+        </div>
+        <div class="stat-meta">INACTIVE ASSETS</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">CRITICAL SYSTEMS</div>
+        <div class="stat-value">
+            {{ assets|selectattr("type", "equalto", "Database")|list|length }}
+        </div>
+        <div class="stat-meta">DATABASE INFRASTRUCTURE</div>
+    </div>
+
+</div>
+
+
+<!-- Asset Inventory -->
+<section class="panel">
+
+    <div class="panel-header">
+        <div>
+            <h2>Asset Inventory</h2>
+            <p>Systems monitored by the CyberShield security operations environment.</p>
+        </div>
+
+        <span class="panel-stat">
+            {{ assets|length }} ASSETS
+        </span>
+    </div>
+
+
+    {% if assets %}
+
+    <div class="table-container">
+
+        <table class="data-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>ASSET</th>
+                    <th>TYPE</th>
+                    <th>IP ADDRESS</th>
+                    <th>STATUS</th>
+                    <th>DESCRIPTION</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for asset in assets %}
+
+                <tr>
+
+                    <td class="mono">
+                        #{{ asset.id }}
+                    </td>
+
+                    <td>
+                        <div class="asset-name">
+                            <span class="asset-indicator"></span>
+
+                            <div>
+                                <strong>{{ asset.name }}</strong>
+
+                                <span class="asset-subtext">
+                                    ASSET-{{ "%03d"|format(asset.id) }}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <span class="asset-type">
+                            {{ asset.type }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="mono">
+                            {{ asset.ip_address }}
+                        </span>
+                    </td>
+
+                    <td>
+
+                        {% if asset.status == "ONLINE" %}
+
+                            <span class="badge badge-low">
+                                <span class="status-dot"></span>
+                                ONLINE
+                            </span>
+
+                        {% elif asset.status == "OFFLINE" %}
+
+                            <span class="badge badge-critical">
+                                OFFLINE
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-info">
+                                {{ asset.status }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td class="description-cell">
+                        {{ asset.description }}
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <div class="empty-icon">SYS</div>
+
+        <h3>No Assets Registered</h3>
+
+        <p>
+            No monitored systems are currently registered in the
+            CyberShield asset inventory.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+
+<!-- Security Architecture -->
+<section class="panel architecture-panel">
+
+    <div class="panel-header">
+
+        <div>
+            <h2>Monitored Environment</h2>
+            <p>Logical representation of the simulated CyberShield infrastructure.</p>
+        </div>
+
+        <span class="panel-icon">NET</span>
+
+    </div>
+
+
+    <div class="architecture-grid">
+
+        <div class="architecture-node attacker-node">
+
+            <div class="node-label">EXTERNAL</div>
+
+            <div class="node-title">
+                ATTACK SOURCE
+            </div>
+
+            <div class="node-ip mono">
+                203.0.113.45
+            </div>
+
+            <div class="node-description">
+                Simulated external attacker
+            </div>
+
+        </div>
+
+
+        <div class="architecture-connection">
+            <span>HTTP / HTTPS</span>
+            <div class="connection-line"></div>
+        </div>
+
+
+        <div class="architecture-node">
+
+            <div class="node-label">DMZ</div>
+
+            <div class="node-title">
+                WEB SERVER
+            </div>
+
+            <div class="node-ip mono">
+                192.168.10.20
+            </div>
+
+            <div class="node-description">
+                Application hosting environment
+            </div>
+
+        </div>
+
+
+        <div class="architecture-connection">
+
+            <span>DATABASE</span>
+            <div class="connection-line"></div>
+
+        </div>
+
+
+        <div class="architecture-node database-node">
+
+            <div class="node-label">INTERNAL</div>
+
+            <div class="node-title">
+                DATABASE SERVER
+            </div>
+
+            <div class="node-ip mono">
+                192.168.10.30
+            </div>
+
+            <div class="node-description">
+                Application data storage
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- Monitoring Information -->
+<section class="info-grid">
+
+    <div class="info-card">
+
+        <div class="info-card-icon">LOG</div>
+
+        <div>
+            <h3>Security Logging</h3>
+            <p>
+                Authentication attempts, web requests and suspicious
+                activity are recorded by the centralized logging service.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="info-card">
+
+        <div class="info-card-icon">DET</div>
+
+        <div>
+            <h3>Detection Engine</h3>
+            <p>
+                Security events generated by monitored assets are
+                evaluated against CyberShield detection rules.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="info-card">
+
+        <div class="info-card-icon">SOC</div>
+
+        <div>
+            <h3>SOC Investigation</h3>
+            <p>
+                Analysts can trace suspicious activity from the source
+                system through alerts and incident investigations.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

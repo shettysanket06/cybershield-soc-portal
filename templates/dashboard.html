@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | CyberShield{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <span class="eyebrow">OVERVIEW</span>
+
+        <h1>Security Operations Dashboard</h1>
+
+        <p>
+            Monitor security activity, detection events and
+            incident response across the simulated environment.
+        </p>
+    </div>
+
+    <div class="header-actions">
+
+        <a
+            href="{{ url_for('alerts') }}"
+            class="btn btn-primary"
+        >
+            View Alerts
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ====================================================== -->
+<!-- STATISTICS -->
+<!-- ====================================================== -->
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+
+        <div class="stat-label">
+            SECURITY LOGS
+        </div>
+
+        <div class="stat-value">
+            {{ stats.logs }}
+        </div>
+
+        <div class="stat-meta">
+            Events collected
+        </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <div class="stat-label">
+            TOTAL ALERTS
+        </div>
+
+        <div class="stat-value">
+            {{ stats.alerts }}
+        </div>
+
+        <div class="stat-meta">
+            Detection events
+        </div>
+
+    </div>
+
+
+    <div class="stat-card danger-stat">
+
+        <div class="stat-label">
+            HIGH / CRITICAL
+        </div>
+
+        <div class="stat-value">
+            {{ stats.high_alerts }}
+        </div>
+
+        <div class="stat-meta">
+            Priority alerts
+        </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <div class="stat-label">
+            INCIDENTS
+        </div>
+
+        <div class="stat-value">
+            {{ stats.incidents }}
+        </div>
+
+        <div class="stat-meta">
+            Open cases · {{ stats.closed_incidents }} closed
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ====================================================== -->
+<!-- MAIN DASHBOARD GRID -->
+<!-- ====================================================== -->
+
+<div class="dashboard-grid">
+
+
+    <!-- SECURITY ACTIVITY -->
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <span class="eyebrow">
+                    SECURITY ACTIVITY
+                </span>
+
+                <h2>Recent Events</h2>
+
+            </div>
+
+            <a
+                href="{{ url_for('logs') }}"
+                class="text-link"
+            >
+                View all →
+            </a>
+
+        </div>
+
+
+        <div class="event-list">
+
+            {% if recent_logs %}
+
+                {% for log in recent_logs %}
+
+                <div class="event-row">
+
+                    <div class="event-indicator
+                        {% if 'FAILURE' in log.event_type or 'ATTEMPT' in log.event_type or 'BLOCKED' in log.event_type or 'LOCKED' in log.event_type %}
+                            danger
+                        {% else %}
+                            normal
+                        {% endif %}
+                    ">
+                    </div>
+
+
+                    <div class="event-main">
+
+                        <strong>
+                            {{ log.event_type }}
+                        </strong>
+
+                        <span>
+                            {{ log.message }}
+                            {% if log.request_data %} · <code>{{ log.request_data }}</code>{% endif %}
+                        </span>
+
+                    </div>
+
+
+                    <div class="event-source">
+
+                        <code>
+                            {{ log.source_ip or "SYSTEM" }}
+                        </code>
+
+                        <small>
+                            {{ log.timestamp }}
+                        </small>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-state">
+                    No security events recorded yet.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- SYSTEM STATUS -->
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <span class="eyebrow">
+                    ENVIRONMENT
+                </span>
+
+                <h2>System Status</h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="system-list">
+
+            <div class="system-row">
+
+                <div>
+                    <strong>Detection Engine</strong>
+                    <span>Rule-based security detection</span>
+                </div>
+
+                <span class="badge success">
+                    OPERATIONAL
+                </span>
+
+            </div>
+
+
+            <div class="system-row">
+
+                <div>
+                    <strong>Log Collection</strong>
+                    <span>Application security events</span>
+                </div>
+
+                <span class="badge success">
+                    ACTIVE
+                </span>
+
+            </div>
+
+
+            <div class="system-row">
+
+                <div>
+                    <strong>Threat Intelligence</strong>
+                    <span>Local IOC database</span>
+                </div>
+
+                <span class="badge info">
+                    READY
+                </span>
+
+            </div>
+
+
+            <div class="system-row">
+
+                <div>
+                    <strong>Incident Response</strong>
+                    <span>{{ stats.incidents }} open · {{ stats.closed_incidents }} closed · {{ stats.blocked_ips }} IP(s) blocked</span>
+                </div>
+
+                <span class="badge success">
+                    READY
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- ====================================================== -->
+<!-- QUICK ACTIONS -->
+<!-- ====================================================== -->
+
+<section class="panel quick-actions-panel">
+
+    <div class="panel-header">
+
+        <div>
+
+            <span class="eyebrow">
+                OPERATIONS
+            </span>
+
+            <h2>Quick Actions</h2>
+
+        </div>
+
+    </div>
+
+
+    <div class="quick-actions">
+
+        <a
+            href="{{ url_for('portal_home') }}"
+            class="quick-action"
+        >
+            <span class="quick-icon">⌁</span>
+
+            <div>
+                <strong>Open Vulnerable App</strong>
+                <span>Launch the controlled attack lab</span>
+            </div>
+        </a>
+
+
+        <a
+            href="{{ url_for('logs') }}"
+            class="quick-action"
+        >
+            <span class="quick-icon">≡</span>
+
+            <div>
+                <strong>Review Logs</strong>
+                <span>Inspect collected security events</span>
+            </div>
+        </a>
+
+
+        <a
+            href="{{ url_for('incidents') }}"
+            class="quick-action"
+        >
+            <span class="quick-icon">◈</span>
+
+            <div>
+                <strong>Manage Incidents</strong>
+                <span>Track investigation and response</span>
+            </div>
+        </a>
+
+
+        <a
+            href="{{ url_for('threat_intel') }}"
+            class="quick-action"
+        >
+            <span class="quick-icon">◇</span>
+
+            <div>
+                <strong>Threat Intelligence</strong>
+                <span>Investigate indicators of compromise</span>
+            </div>
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}
