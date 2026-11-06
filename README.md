@@ -30,15 +30,15 @@ CyberShield is a web-based learning prototype for demonstrating a simplified Sec
 
 ```mermaid
 flowchart TD
-    A\[Controlled employee portal activity] --> B\[Logging service]
-    B --> C\[Detection rules]
-    C --> D\[Alert queue]
-    D --> E\[Incident investigation]
-    E --> F\[Containment action]
-    F --> G\[Remediation]
-    G --> H\[Verification and closure]
-    I\[Synthetic IOC catalogue] --> E
-    J\[SQLite local database / optional MongoDB backend] --> B
+    A[Controlled employee portal activity] --> B[Logging service]
+    B --> C[Detection rules]
+    C --> D[Alert queue]
+    D --> E[Incident investigation]
+    E --> F[Containment action]
+    F --> G[Remediation]
+    G --> H[Verification and closure]
+    I[Synthetic IOC catalogue] --> E
+    J[SQLite local database / optional MongoDB backend] --> B
     J --> D
     J --> E
 ```
@@ -61,11 +61,11 @@ cybershield-soc-portal/
 ├── config.py
 ├── database.py
 ├── detection.py
-├── incident\_response.py
-├── logging\_service.py
-├── threat\_intel.py
-├── init\_mongodb.py
-├── verify\_project.py
+├── incident_response.py
+├── logging_service.py
+├── threat_intel.py
+├── init_mongodb.py
+├── verify_project.py
 ├── requirements.txt
 ├── .env.example
 ├── run.ps1
@@ -154,7 +154,7 @@ Only perform these actions against your own local instance.
 The repository includes a structural and optional functional verification script.
 
 ```powershell
-python verify\_project.py
+python verify_project.py
 ```
 
 * The structural checks validate that key source files exist, Python files parse, template references resolve, and POST forms include CSRF tokens.
@@ -202,7 +202,7 @@ The SOC dashboard provides an overview of the simulated security operations envi
 
 
 
-!\[CyberShield SOC Dashboard](docs/screenshots/Dashboard.png)
+![CyberShield SOC Dashboard](docs/screenshots/Dashboard.png)
 
 
 
@@ -214,7 +214,7 @@ The incident management interface demonstrates the workflow for reviewing and ma
 
 
 
-!\[CyberShield Incident Management](docs/screenshots/Incident-management.png)
+![CyberShield Incident Management](docs/screenshots/Incident-management.png)
 
 
 
@@ -226,7 +226,7 @@ The employee portal provides a controlled interface for simulating security-rela
 
 
 
-!\[CyberShield Employee Portal](docs/screenshots/employee-portal.png)
+![CyberShield Employee Portal](docs/screenshots/employee-portal.png)
 
 
 
