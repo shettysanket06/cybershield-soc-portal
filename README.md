@@ -4,7 +4,7 @@
 
 CyberShield is a web-based learning prototype for demonstrating a simplified Security Operations Center (SOC) workflow. It combines a SOC console with a controlled employee-facing portal so that simulated security events can be logged, detected, investigated, contained, remediated, verified, and closed.
 
-> \*\*Safety and scope:\*\* CyberShield is an academic demonstration environment, not a production SIEM, SOAR platform, WAF, or enterprise identity system. Run it locally on `127.0.0.1` and use only synthetic or authorized test data. Do not expose it to the public internet. The employee portal contains intentional attack-simulation scenarios; it is not designed as a real employee application.
+> **Safety and scope:** CyberShield is an academic demonstration environment, not a production SIEM, SOAR platform, WAF, or enterprise identity system. Run it locally on `127.0.0.1` and use only synthetic or authorized test data. Do not expose it to the public internet. The employee portal contains intentional attack-simulation scenarios; it is not designed as a real employee application.
 
 ## Project goals
 
@@ -186,15 +186,15 @@ This project is intended to support learning and discussion around event logging
 
 
 
-\---
+---
 
 
 
-\## Application Screenshots
+## Application Screenshots
 
 
 
-\### 1. SOC Dashboard
+### 1. SOC Dashboard
 
 
 
@@ -206,7 +206,7 @@ The SOC dashboard provides an overview of the simulated security operations envi
 
 
 
-\### 2. Incident Management
+### 2. Incident Management
 
 
 
@@ -218,7 +218,7 @@ The incident management interface demonstrates the workflow for reviewing and ma
 
 
 
-\### 3. Employee Portal
+### 3. Employee Portal
 
 
 
