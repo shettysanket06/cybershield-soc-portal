@@ -82,43 +82,43 @@ Python 3.11 or a compatible supported Python 3 version is recommended.
 1. Clone the repository and enter its directory:
 
 ```powershell
-   git clone https://github.com/shettysanket06/cybershield-soc-portal.git
-   cd cybershield-soc-portal
-   ```
+git clone https://github.com/shettysanket06/cybershield-soc-portal.git
+Set-Location .\cybershield-soc-portal
+```
 
 2. Create and activate a virtual environment:
 
 ```powershell
-   py -m venv .venv
-   .\\.venv\\Scripts\\Activate.ps1
-   ```
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
 3. Install dependencies:
 
 ```powershell
-   python -m pip install --upgrade pip
-   pip install -r requirements.txt
-   ```
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
 
-4. Set a local development secret for this session and use SQLite:
+4. Select the local SQLite backend and generate a session-only development secret:
 
 ```powershell
-   $env:CYBERSHIELD\_DB\_BACKEND = "sqlite"
-   $env:CYBERSHIELD\_SECRET\_KEY = (python -c "import secrets; print(secrets.token\_hex(32))")
-   ```
+$env:CYBERSHIELD_DB_BACKEND = "sqlite"
+$env:CYBERSHIELD_SECRET_KEY = (python -c "import secrets; print(secrets.token_hex(32))")
+```
 
 5. Start the application:
 
 ```powershell
-   python app.py
-   ```
+python app.py
+```
 
-6. Open these local addresses:
+6. Open the local interfaces:
 
-   * SOC console: `http://127.0.0.1:5000/login`
-   * Employee portal: `http://127.0.0.1:5000/portal`
+- SOC console: http://127.0.0.1:5000/login
+- Employee portal: http://127.0.0.1:5000/portal
 
-The SQLite database is created and seeded locally at first run. It is not tracked by Git.
+The application creates and seeds its local SQLite database on first run. The database and virtual environment are not tracked by Git.
 
 ### Demo-only accounts
 
