@@ -161,7 +161,25 @@ python verify_project.py
 * If dependencies are installed, the script also runs local Flask-client checks for login/role separation, simulated detection, the incident lifecycle, and related behaviours.
 * The script may create a local database during functional testing. Local database files are ignored by Git.
 
-**Validation status:** This source package has been prepared for public repository hygiene. Run the verification command on your machine and record the actual result before claiming that the application has passed functional tests. No results should be claimed unless you personally run and verify them.
+**Validation status: PASS (author-reported local run, 6 November 2026)**
+
+The author ran `python verify_project.py` on a Windows machine using Python 3.11 after installing the packages listed in `requirements.txt`. The complete terminal output reported:
+
+```text
+Existing local SQLite schema and demo records: PASS
+CyberShield structural verification: PASS
+Python modules checked: 10
+Templates checked: 15
+CSRF coverage for POST forms: PASS
+Template endpoint references: PASS
+End-to-end functional & lifecycle verification: PASS
+```
+
+**Recorded result:** All structural checks and the script's end-to-end Flask test-client workflow passed in that local run. The functional workflow exercised login and role separation, simulated SQL-injection/XSS handling, alert generation, investigation, containment, remediation, verification, and incident closure.
+
+**Environment qualification:** The supplied terminal transcript shows Windows Command Prompt and Python 3.11 package installation. It does not establish that the virtual environment was activated: `.venv\\Scripts\\Activate.ps1` is the PowerShell activation script, while the displayed prompt is Command Prompt, and pip reported packages in the user-level Python installation. The verification result is therefore recorded as a successful local Python 3.11 run, not as a confirmed isolated-venv run. To reproduce in Command Prompt, activate with `.venv\\Scripts\\activate.bat`, then reinstall requirements and rerun the command.
+
+This is a successful run of the repository's own structural and functional checks. It is **not** a comprehensive security audit, production-readiness assessment, or proof that every feature and deployment configuration is secure. Results are specific to the reported local environment and test data.
 
 ## Security notes
 
